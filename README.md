@@ -18,8 +18,7 @@ Defining new noise models is as simple as extending a base class and implementin
 
 You will need a C++11 compliant compiler such as g++ 4.8 or clang 5.
 
-LibBandit uses the Scons build system. With this installed you should be able to compile all sources by typing
-```scons```
+LibBandit uses the Scons build system. With this installed you should be able to compile all sources by typing `scons`
 
 
 ##Using the Library
