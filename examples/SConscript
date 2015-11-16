@@ -1,0 +1,11 @@
+
+
+flags = '-O3 -Wall -fomit-frame-pointer -funroll-loops -std=c++11'
+
+env = Environment(CXX = 'g++', CXXFLAGS = flags)
+
+env.Append(CPPPATH = ['../src'])
+
+example1 = env.Program(['basic.cc'], LIBS=['bandit'], LIBPATH='../lib')
+example2 = env.Program(['threads.cc'], LIBS=['bandit'], LIBPATH='../lib')
+

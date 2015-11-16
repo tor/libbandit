@@ -1,0 +1,16 @@
+import os
+
+flags = '-O3 -Wall -fomit-frame-pointer -funroll-loops -std=c++11'
+
+env = Environment(CXX = 'g++', CXXFLAGS = flags)
+
+libbandit = env.Library('bandit', [ 'bandit.cc', 'algs.cc']) 
+
+makegittins = env.Program('makegittins', ['makegittins.cc'], LIBS='pthread')
+
+parser = env.Program('parser', ['parser.cc'])
+
+
+Install('../lib', libbandit)
+Install('../bin', makegittins)
+Install('../bin', parser)
