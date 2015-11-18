@@ -38,6 +38,8 @@ The tolerance should be chosen as small as possible. The pre-computed table used
 You can lookup the Gittins index in a table with `makegittins lookup <file> <horizon> <T>` where <horizon> is the number of rounds
 remaining and <T> is the number of samples from that arm.
 
+A larger pre-computed table for horizon 10,000 and tolerance 0.000005 is available for download from http://downloads.tor-lattimore.com/gittins/10000.zip.
+
 
 
 ##Contributing
