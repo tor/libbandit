@@ -1,0 +1,12 @@
+
+
+flags = '-O3 -Wall -fomit-frame-pointer -funroll-loops -std=c++11'
+
+env = Environment(CXX = 'g++', CXXFLAGS = flags)
+
+env.Append(CPPPATH = ['../../src'])
+
+sim = env.Program('2015-conservative', ['sim.cc'], LIBS=['bandit'], LIBPATH='../../lib')
+
+Install('../../bin', sim)
+

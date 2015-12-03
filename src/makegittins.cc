@@ -25,6 +25,7 @@ Author: Tor Lattimore, 2015
 #include <cstdlib>
 #include <cstring>
 #include <cassert>
+#include <random>
 
 #include "pool.h"
 #include "gittins_table.h"

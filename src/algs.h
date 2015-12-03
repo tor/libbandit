@@ -28,5 +28,6 @@ double alg_aocucb(BanditProblem &bp, uint64_t n, double alpha);
 double alg_gaussian_ts(BanditProblem &bp, uint64_t n, std::default_random_engine &gen);
 double alg_gaussian_gittins(BanditProblem &bp, uint64_t n, GittinsTable &table);
 double alg_gaussian_gittins_approx(BanditProblem &bp, uint64_t n); 
+double alg_conservative_ucb(BanditProblem &bp, uint64_t n, double alpha, double delta);
 
 
