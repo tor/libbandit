@@ -20,6 +20,7 @@ see http://creativecommons.org/publicdomain/zero/1.0/
 
 #include <cstdint>
 #include <random>
+#include <vector>
 
 double alg_ocucb(BanditProblem &bp, uint64_t n, double alpha, double psi);
 double alg_ucb(BanditProblem &bp, uint64_t n, double alpha);
@@ -29,5 +30,5 @@ double alg_gaussian_ts(BanditProblem &bp, uint64_t n, std::default_random_engine
 double alg_gaussian_gittins(BanditProblem &bp, uint64_t n, GittinsTable &table);
 double alg_gaussian_gittins_approx(BanditProblem &bp, uint64_t n); 
 double alg_conservative_ucb(BanditProblem &bp, uint64_t n, double alpha, double delta);
-
+double alg_unbalanced_moss(BanditProblem &bp, uint64_t n, std::vector<double> B);
 

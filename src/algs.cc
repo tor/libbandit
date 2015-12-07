@@ -278,3 +278,26 @@ double alg_conservative_ucb(BanditProblem &bp, uint64_t n, double alpha, double 
   return bp.get_regret();
 }
 
+
+
+/*************************************************************
+UNBALANCED MOSS
+*************************************************************/
+double alg_unbalanced_moss(BanditProblem &bp, uint64_t n, vector<double> B) {
+  bp.reset();
+  uint64_t K = bp.K;
+  priority_queue<Arm> arms;
+
+  for (uint64_t i = 0;i != K;++i) {
+    arms.push(Arm(i, numeric_limits<double>::max())); 
+  }
+
+  for (uint64_t t = 0;t != n;++t) {
+    auto best = arms.top();
+    arms.pop();
+    best.pull(bp.choose(best.i));
+    best.idx = best.mean() + sqrt(4.0 / best.T * log(max(1.0, (double)(n * n) / (B[best.i] * B[best.i] * best.T))));
+    arms.push(best);
+  }
+  return bp.get_regret();
+}
