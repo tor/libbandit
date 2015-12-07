@@ -54,14 +54,39 @@ void do_experiment1(default_random_engine gen) {
   Logger<LogEntry> log("data/experiment1.log");
   for (int t = 0;t!=20000 && !done();++t) {
     cout << "running trial: " << t << "\n";
-    for (int n = 100; n!= 10000;n+=100) {
-      vector<double> mus = {0, 0.1, -0.1, -0.1, -0.1};
+    for (int n = 2000; n!= 100000;n+=2000) {
+      vector<double> mus = {0.5, 0.6, 0.4, 0.4, 0.4};
       GaussianBandit bandit(mus, gen);
       log.log(LogEntry(0, n, alg_ucb(bandit, n, 2.0)));
-      log.log(LogEntry(1, n, alg_conservative_ucb(bandit, n, 0.9, 1.0 / n))); 
+      log.log(LogEntry(1, n, alg_conservative_ucb(bandit, n, 0.1, 1.0 / n))); 
     }
 
     if (t % 20 == 0) {
+      log.save();
+    }
+  }
+  log.save();
+}
+
+
+/********************************************************
+* FIXED HORIZON
+* GAUSSIAN REWARDS
+* VARIABLE DELTA
+********************************************************/
+void do_experiment2(default_random_engine gen) {
+  Logger<LogEntry> log("data/experiment2.log");
+  int n = 10000;
+  vector<double> mus = {0.5, 0.6, 0.4, 0.4, 0.4};
+  for (int t = 0;t!=20000 && !done();++t) {
+    cout << "running trial: " << t << "\n";
+    for (double alpha = 0.0;alpha <= 1.0;alpha+=0.01) {
+      GaussianBandit bandit(mus, gen);
+      log.log(LogEntry(0, alpha, alg_ucb(bandit, n, 2.0)));
+      log.log(LogEntry(1, alpha, alg_conservative_ucb(bandit, n, alpha, 1.0 / n))); 
+    }
+
+    if (t % 4 == 0) {
       log.save();
     }
   }
@@ -90,6 +115,7 @@ int main(int argc, char *argv[]) {
 
   switch (exp_id) {
     case 1: do_experiment1(gen); break;
+    case 2: do_experiment2(gen); break;
   }
 }
 

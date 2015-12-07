@@ -243,6 +243,9 @@ double alg_conservative_ucb(BanditProblem &bp, uint64_t n, double alpha, double 
   for (int i = 0;i != K;++i) {
     arms.push_back(Arm(i, numeric_limits<double>::max())); 
   }
+  double x = log(K / delta); 
+  double y = log(max(3.0, log(K / delta))) + log(2.0 * M_E * M_E * K / delta);
+
 
   for (uint64_t t = 0;t != n;++t) {
     double Z = 0.0;
@@ -255,18 +258,17 @@ double alg_conservative_ucb(BanditProblem &bp, uint64_t n, double alpha, double 
           arms[i].idx = numeric_limits<double>::max();
           lambda[i] = 0.0;
         }else {
-          double x = log(K / delta); 
-          double y = log(max(3.0, log(K / delta))) + log(2.0 * M_E * M_E * K / delta);
           double psi = x*(1.0 + log(x)) / ((x - 1.0) * log(x)) * log(log(arms[i].T+1)) + y;
           arms[i].idx = arms[i].mean() + sqrt(2.0 / arms[i].T * psi);
           lambda[i] = max(0.0, arms[i].mean() - sqrt(2.0 / arms[i].T * psi));
         }
       }
-      Z+=arms[i].T * lambda[i];
+      Z+=lambda[i] * arms[i].T;
     }
     auto J = max_element(arms.begin(), arms.end());
-    Z-=(1.0 - alpha) * (t+1) * mu0 + lambda[J->i];
-    J->pull(bp.choose(J->i));
+    Z += lambda[J->i];
+    Z -= (1.0 - alpha) * mu0 * (t+1);
+    
     if (Z >= 0) {
       J->pull(bp.choose(J->i));
     }else {
