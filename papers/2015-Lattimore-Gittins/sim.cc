@@ -160,11 +160,11 @@ void do_experiment5(default_random_engine gen) {
 * VARIABLE DELTA
 ********************************************************/
 void do_experiment6(default_random_engine gen) {
-  int n = 400;
+  int n = 2000;
   string fn = "data/experiment6.log";
   Logger<LogEntry> log(fn);
   GittinsTable table("gittins/5000.bin");
-  BayesTable bayes_table("gittins/bayes400.bin");
+  BayesTable bayes_table("bayes/2000.bin");
   for (int t = 0;t!=10000 && !done();++t) {
     cout << "running trial: " << t << "\n";
     for (double delta = 0.04;delta <= 2.0;) {
@@ -178,7 +178,7 @@ void do_experiment6(default_random_engine gen) {
       delta+=0.04;
     }
 
-    if (t % 5 == 0) {
+    if (t % 20 == 0) {
       log.save();
     }
   }

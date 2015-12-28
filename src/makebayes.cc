@@ -8,6 +8,8 @@
 #include <vector>
 #include <fstream>
 #include <cassert>
+#include <cstring>
+#include <thread>
 
 #include "pool.h"
 
@@ -216,15 +218,32 @@ void BuildTable(string fn, int n, double tolerance, int max_threads) {
   map<vector<int>,Spline> *lookup = new map<vector<int>,Spline>();
   for (int m = 1;m!=n+1;m++) {
     cout << "running at depth " << m << "\n";
-    Pool<int> pool(max_threads);  
-    for (int T1 = 1;T1!=n-m+1;T1++) {
+    vector<thread> threads;
+    for (int T1 = 1;T1!=n-m+2;T1++) {
       int T2 = 2 + n - m - T1;
-      ComputeIndex(lookup, m, T1, T2, tolerance);
-/*      int T2 = 2 + n - m - T1;
       (*lookup)[{m,T1,T2}] = Spline();
-      pool.push([lookup, m, T1,T2,tolerance]{ComputeIndex(lookup, m, T1, T2, tolerance); return 0;});*/
     }
-//    pool.run(false);
+    for (int i = 0;i != max_threads;++i) {
+      threads.push_back(std::thread([max_threads, i, lookup, m, n, tolerance] {
+        for (int T1 = 1;T1!=n-m+2;T1++) {
+          int T2 = 2 + n - m - T1;
+          if (T1 % max_threads == i) {
+            ComputeIndex(lookup, m, T1, T2, tolerance);
+          }
+        }
+        return 0;
+      })); 
+    }
+    for (int i = 0;i != max_threads;++i) {
+      threads[i].join();
+    }
+    if (m > 1) {
+      for (int T1 = 1;T1!=n-(m-1)+1;T1++) {
+        int T2 = 2 + n - (m - 1) - T1;
+        auto L = lookup->find({m-1,T1,T2});
+        L->second.erase(L->second.begin(), L->second.end());
+      }
+    }
   }
   ofstream out(fn, ios::out | ios::binary);
   for (auto &e : *lookup) {
@@ -249,7 +268,7 @@ int main(int argc, char *argv[]) {
     assert(n >= 1);
     assert(tolerance > 0);
 
-    BuildTable(fn, n, tolerance, max_threads);
+    BuildTable(fn, n-2, tolerance, max_threads);
     return 0;
   }
 die:

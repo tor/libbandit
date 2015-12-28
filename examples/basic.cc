@@ -35,14 +35,14 @@ int main() {
   default_random_engine gen(rd());                  
 
   /* horizon of 400 */
-  int horizon = 400;
+  int horizon = 2000;
 
   /* two arms, one with mean 0, the other with mean 0.1 */
   vector<double> means = {0, 0.3};            
 
   /* load gittins indices */
   GittinsTable gittins("gittins/5000.bin");
-  BayesTable bayes("gittins/bayes400.bin");
+  BayesTable bayes("gittins/bayes2000.bin");
 
   /* we want 5000 samples */
   int samples = 5000;
