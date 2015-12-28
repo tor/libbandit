@@ -7,6 +7,7 @@ env = Environment(CXX = 'g++', CXXFLAGS = flags)
 libbandit = env.Library('bandit', [ 'bandit.cc', 'algs.cc']) 
 
 makegittins = env.Program('makegittins', ['makegittins.cc'], LIBS='pthread')
+makegittins = env.Program('makebayes', ['makebayes.cc'], LIBS='pthread')
 
 parser = env.Program('parser', ['parser.cc'])
 

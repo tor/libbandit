@@ -51,13 +51,13 @@ template<class T> class Pool {
     jobs.push(job);
   }
 
-  std::vector<T> run();
+  std::vector<T> run(bool verbose = true);
 
   std::queue<std::function<T()>> jobs;
 };
 
 template<class T>
-std::vector<T> Pool<T>::run() { 
+std::vector<T> Pool<T>::run(bool verbose) { 
   std::vector<std::future<T>> threads;
   std::vector<T> data;
 
@@ -69,7 +69,9 @@ std::vector<T> Pool<T>::run() {
     if (threads.size() < max_threads) {
       running++;
       auto job = jobs.front();
-      std::cout << "starting job " << running << "\n";
+      if (verbose) {
+        std::cout << "starting job " << running << "\n";
+      }
       jobs.pop();
       threads.push_back(std::async(std::launch::async, [job] {
         return job();

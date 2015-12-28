@@ -24,6 +24,34 @@ see http://creativecommons.org/publicdomain/zero/1.0/
 #include <iostream>
 #include <cassert>
 
+class BayesTable {
+  public:
+  BayesTable(std::string fn) {
+    std::ifstream in(fn, std::ios::in|std::ios::binary|std::ios::ate);
+    assert(in);
+    std::streamsize s = in.tellg();
+    in.seekg(0, std::ios::beg);
+    n = s / (sizeof(int) * 3 + sizeof(double));
+    for (int i = 0;i != n;++i) {
+      std::vector<int> e = {0,0,0};
+      double d;
+      in.read((char*)e.data(), sizeof(int) * 3);
+      in.read((char*)&d, sizeof(double));
+      data[e] = d;
+    }
+    in.close();
+  }
+  
+  double lookup(std::vector<int> e) {
+    assert(data.find(e) != data.end());
+    return data[e];
+  }
+
+  private:
+  std::map<std::vector<int>,double> data;
+  int n;
+};
+
 class GittinsTable {
   public:
   GittinsTable(std::string fn) {

@@ -301,3 +301,37 @@ double alg_unbalanced_moss(BanditProblem &bp, uint64_t n, vector<double> B) {
   }
   return bp.get_regret();
 }
+
+
+/*************************************************************
+GAUSSIAN BAYES (TWO ARMS ONLY)
+*************************************************************/
+double alg_gaussian_bayes(BanditProblem &bp, uint64_t n, BayesTable &table) {
+  bp.reset();
+  uint64_t K = bp.K;
+  assert(K = 2);
+  vector<Arm> arms;
+
+  for (uint64_t i = 0;i != K;++i) {
+    arms.push_back(Arm(i, numeric_limits<double>::max())); 
+  }
+  for (uint64_t i = 0;i != 2;++i) {
+    arms[i].pull(bp.choose(i));
+  }
+
+  for (uint64_t t = 2;t != n;++t) {
+    double delta = arms[1].mean() - arms[0].mean();
+    double divide = table.lookup({n-t, arms[0].T, arms[1].T});
+
+    if (delta > divide) {
+      arms[1].pull(bp.choose(1));
+    }else {
+      arms[0].pull(bp.choose(0));
+    }
+  }
+  return bp.get_regret();
+}
+
+
+
+

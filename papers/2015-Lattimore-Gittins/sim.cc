@@ -154,6 +154,37 @@ void do_experiment5(default_random_engine gen) {
 
 
 
+/********************************************************
+* FIXED HORIZON
+* GAUSSIAN REWARDS
+* VARIABLE DELTA
+********************************************************/
+void do_experiment6(default_random_engine gen) {
+  int n = 400;
+  string fn = "data/experiment6.log";
+  Logger<LogEntry> log(fn);
+  GittinsTable table("gittins/5000.bin");
+  BayesTable bayes_table("gittins/bayes400.bin");
+  for (int t = 0;t!=10000 && !done();++t) {
+    cout << "running trial: " << t << "\n";
+    for (double delta = 0.04;delta <= 2.0;) {
+      vector<double> mus = {0,-delta};
+      shuffle(mus.begin(),mus.end(), gen);
+      GaussianBandit bandit(mus, gen);
+      log.log(LogEntry(0, delta, alg_ocucb(bandit, n, 3.0, 2.0)));
+      log.log(LogEntry(1, delta, alg_gaussian_gittins(bandit, n, table)));
+      log.log(LogEntry(2, delta, alg_gaussian_bayes(bandit, n, bayes_table)));
+
+      delta+=0.04;
+    }
+
+    if (t % 5 == 0) {
+      log.save();
+    }
+  }
+  log.save();
+}
+
 
 int main(int argc, char *argv[]) {
   /* seed random number generate */
@@ -177,6 +208,7 @@ int main(int argc, char *argv[]) {
     case 3: do_experiment1(gen,10); break;
     case 4: do_experiment4(gen); break;
     case 5: do_experiment5(gen); break;
+    case 6: do_experiment6(gen); break;
   }
 }
 

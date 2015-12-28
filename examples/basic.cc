@@ -34,17 +34,18 @@ int main() {
   /* we need random numbers */
   default_random_engine gen(rd());                  
 
-  /* horizon of 500 */
-  int horizon = 500;
+  /* horizon of 400 */
+  int horizon = 400;
 
   /* two arms, one with mean 0, the other with mean 0.1 */
   vector<double> means = {0, 0.3};            
 
   /* load gittins indices */
-  GittinsTable gittins("gittins/500.bin");
+  GittinsTable gittins("gittins/5000.bin");
+  BayesTable bayes("gittins/bayes400.bin");
 
-  /* we want 1000 samples */
-  int samples = 1000;
+  /* we want 5000 samples */
+  int samples = 5000;
 
   /* compute average regret over `sample` i.i.d. samples */
   double R_ucb = 0.0;
@@ -53,6 +54,7 @@ int main() {
   double R_ts = 0.0;
   double R_git = 0.0;
   double R_moss = 0.0;
+  double R_bayes = 0.0;
   for (int i = 0;i != samples;++i) {
     shuffle(means.begin(), means.end(), gen);
     /* create a gaussian bandit */
@@ -64,6 +66,7 @@ int main() {
     R_ts+=alg_gaussian_ts(bandit, horizon, gen);
     R_moss+=alg_moss(bandit, horizon, 2.0);
     R_git+=alg_gaussian_gittins(bandit, horizon, gittins);
+    R_bayes+=alg_gaussian_bayes(bandit, horizon, bayes);
   }
 
   /* output the average regret */
@@ -73,6 +76,7 @@ int main() {
   cout << "average regret of TS is " << R_ts / samples << "\n";
   cout << "average regret of MOSS is " << R_moss / samples << "\n";
   cout << "average regret of Gittins is " << R_git / samples << "\n";
+  cout << "average regret of Bayes is " << R_bayes / samples << "\n";
 
   return 0;
 }
