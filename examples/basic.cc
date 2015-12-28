@@ -42,7 +42,7 @@ int main() {
 
   /* load gittins indices */
   GittinsTable gittins("gittins/5000.bin");
-  BayesTable bayes("gittins/bayes2000.bin");
+  BayesTable bayes("bayes/2000.bin");
 
   /* we want 5000 samples */
   int samples = 5000;
