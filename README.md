@@ -10,6 +10,7 @@ Currently the following algorithms are implemented:
 * MOSS
 * Finite-horizon Gittins index (Gaussian/Gaussian model/prior)
 * An approximation of the finite-horizon Gittins index
+* Bayesian optimal for two arms (Gaussian/Gaussian model/prior)
 
 Defining new noise models is as simple as extending a base class and implementing the reward function.
 
