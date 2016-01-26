@@ -39,19 +39,34 @@ int main(int argc, char* argv[]) {
   }
   map<double,map<int,Data> > table;
   string line;
-  ifstream in(argv[1], ios::in);
-  while (!in.eof()) {
-    LogEntry e;  
-    in.read((char*)&e, sizeof(LogEntry));
-    auto iter1 = table.find(e.x);
-    if (iter1 == table.end()) {
-      table[e.x] = {{e.id, Data(e.y)}};
-    }else {
-      auto iter2 = iter1->second.find(e.id);
-      if (iter2 == iter1->second.end()) {
-        iter1->second[e.id] = Data(e.y);
+  ifstream in(argv[1], ios::in | ios::ate);
+  auto end = in.tellg();
+  uint64_t size = end;
+  uint64_t pos = 0;
+  uint64_t block_size = 500000;
+  vector<LogEntry> data(block_size);
+  in.seekg(0, ios::beg);
+  while (pos != size) {
+    uint64_t read_number = block_size;
+    if ((size - pos) / sizeof(LogEntry) < block_size) {
+      read_number = (size - pos) / sizeof(LogEntry);
+    }
+    cerr << "reading " << read_number << "\n";
+    in.read((char*)data.data(), sizeof(LogEntry) * read_number);
+    pos+=sizeof(LogEntry) * read_number;
+
+
+    for (int i = 0;i != read_number;++i) {
+      auto iter1 = table.find(data[i].x);
+      if (iter1 == table.end()) {
+        table[data[i].x] = {{data[i].id, Data(data[i].y)}};
       }else {
-        iter2->second << e.y;
+        auto iter2 = iter1->second.find(data[i].id);
+        if (iter2 == iter1->second.end()) {
+          iter1->second[data[i].id] = Data(data[i].y);
+        }else {
+          iter2->second << data[i].y;
+        }
       }
     }
   }

@@ -50,19 +50,14 @@ string time_string() {
 * GAUSSIAN REWARDS
 * VARIABLE DELTA
 ********************************************************/
-void do_experiment1(default_random_engine gen, int K) {
-  int n = 1000;
-  string fn;
-  switch (K) {
-    case 2: fn = "data/experiment1.log";break;
-    case 5: fn = "data/experiment2.log";break;
-    case 10: fn = "data/experiment3.log";break;
-  }
+void do_experiment1(default_random_engine gen, int n, int K, double m, string fn) {
   Logger<LogEntry> log(fn);
-  GittinsTable table("gittins/5000.bin");
+  GittinsTable table("gittins/10000.bin");
+  int xn = 200;
+  double step = m/xn;
   for (int t = 0;t!=20000 && !done();++t) {
     cout << "running trial: " << t << "\n";
-    for (double delta = 0.04;delta < 2.0;delta+=0.04) {
+    for (double delta = step;delta <= m+0.0001;delta+=step) {
       vector<double> mus = {0};
       for (int k = 0;k != K-1;++k) {
         mus.push_back(-delta);
@@ -87,10 +82,9 @@ void do_experiment1(default_random_engine gen, int K) {
 * GAUSSIAN REWARDS
 * VARIABLE DELTA
 ********************************************************/
-void do_experiment4(default_random_engine gen) {
+void do_experiment2(default_random_engine gen, string fn) {
   int n = 1000;
   int K = 5;
-  string fn = "data/experiment4.log";
   Logger<LogEntry> log(fn);
   GittinsTable table("gittins/5000.bin");
   for (int t = 0;t!=10000 && !done();++t) {
@@ -118,12 +112,10 @@ void do_experiment4(default_random_engine gen) {
 * GAUSSIAN REWARDS
 * VARIABLE DELTA
 ********************************************************/
-void do_experiment5(default_random_engine gen) {
+void do_experiment3(default_random_engine gen, string fn) {
   int n = 50000;
   int K = 5;
-  string fn = "data/experiment5.log";
   Logger<LogEntry> log(fn);
-  GittinsTable table("gittins/5000.bin");
   for (int t = 0;t!=10000 && !done();++t) {
     cout << "running trial: " << t << "\n";
     for (double delta = 0.0025;delta < 0.2;) {
@@ -159,9 +151,8 @@ void do_experiment5(default_random_engine gen) {
 * GAUSSIAN REWARDS
 * VARIABLE DELTA
 ********************************************************/
-void do_experiment6(default_random_engine gen) {
+void do_experiment4(default_random_engine gen, string fn) {
   int n = 2000;
-  string fn = "data/experiment6.log";
   Logger<LogEntry> log(fn);
   GittinsTable table("gittins/5000.bin");
   BayesTable bayes_table("bayes/2000.bin");
@@ -203,12 +194,15 @@ int main(int argc, char *argv[]) {
   run_time = atoi(argv[2]);
 
   switch (exp_id) {
-    case 1: do_experiment1(gen,2); break;
-    case 2: do_experiment1(gen,5); break;
-    case 3: do_experiment1(gen,10); break;
-    case 4: do_experiment4(gen); break;
-    case 5: do_experiment5(gen); break;
-    case 6: do_experiment6(gen); break;
+    case 1: do_experiment1(gen,1000,2,2.0,"data/exp1.log"); break;
+    case 2: do_experiment1(gen,1000,5,2.0,"data/exp2.log"); break;
+    case 3: do_experiment1(gen,1000,10,2.0,"data/exp3.log"); break;
+    case 4: do_experiment1(gen,10000,2,0.5,"data/exp4.log"); break;
+    case 5: do_experiment1(gen,10000,5,0.5,"data/exp5.log"); break;
+    case 6: do_experiment1(gen,10000,10,0.5,"data/exp6.log"); break;
+    case 7: do_experiment2(gen, "data/exp7.log"); break;
+    case 8: do_experiment3(gen, "data/exp8.log"); break;
+    case 9: do_experiment4(gen, "data/exp9.log"); break;
   }
 }
 

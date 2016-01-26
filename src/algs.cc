@@ -21,6 +21,7 @@ see http://creativecommons.org/publicdomain/zero/1.0/
 #include <iostream>
 #include <limits>
 #include <queue>
+#include <list>
 
 using namespace std;
 
@@ -69,19 +70,29 @@ double alg_ocucb(BanditProblem &bp, uint64_t n, double alpha, double psi) {
   for (;t!=n && t!=K;++t) {
     arms[t].pull(bp.choose(arms[t].i));
   }
-  bool update = true;
+
+  for (auto &a : arms) {
+    a.idx = a.mean() + sqrt(alpha / a.T * log(psi * n / (double)(K+1)));
+  }
+  sort(arms.begin(), arms.end(), greater<Arm>());
+  bool update = false;
   for (;t != n;++t) {
+    double bonus = alpha * log(psi * n / (double)(t+1));
+    double idx = arms[0].mean() + sqrt(bonus / arms[0].T);
+
+    if (idx < arms[1].idx) {
+      update = true;
+    }
+
     if (update) {
-      for (auto &a : arms) {
-        a.idx = a.mean() + sqrt(alpha / a.T * log(psi * n / (double)(t+1)));
+      arms[0].idx = idx;
+      for (int i = 1;i != K;++i) {
+        arms[i].idx = arms[i].mean() + sqrt(bonus / arms[i].T);
       }
-      sort(arms.rbegin(), arms.rend());
+      sort(arms.begin(), arms.end(), greater<Arm>());
       update = false;
     }
     arms[0].pull(bp.choose(arms[0].i));
-    if (arms[0].mean() + sqrt(alpha / arms[0].T * log(psi * n / (double)(t+1))) < arms[1].idx) {
-      update = true;
-    }
   }
   return bp.get_regret();
 }
@@ -114,22 +125,38 @@ MOSS
 *************************************************************/
 double alg_moss(BanditProblem &bp, uint64_t n, double alpha) {
   bp.reset();
-  int K = bp.K;
-  priority_queue<Arm> arms;
+  uint64_t K = bp.K;
+  list<Arm> arms;
 
-  for (int i = 0;i != K;++i) {
-    arms.push(Arm(i, numeric_limits<double>::max())); 
+  for (uint64_t i = 0;i != K;++i) {
+    arms.push_back(Arm(i, numeric_limits<double>::max())); 
   }
 
-  for (uint64_t t = 0;t != n;++t) {
-    auto best = arms.top();
-    arms.pop();
-    best.pull(bp.choose(best.i));
-    best.idx = best.mean() + sqrt(alpha / best.T * log(max(1.0, (double)n / (K * best.T))));
-    arms.push(best);
+  uint64_t t = 0;
+  for (auto &a : arms) {
+    a.pull(bp.choose(a.i));
+    a.idx = a.mean() + sqrt(alpha * log(max(1.0, (double)n / K)));
+  }
+
+  arms.sort(greater<Arm>());
+
+  for (;t != n;++t) {
+    double idx = arms.begin()->mean() + sqrt(alpha / arms.begin()->T * log(max(1.0, (double)n / (K * arms.begin()->T))));
+    arms.begin()->idx = idx;
+    
+    auto i = arms.begin();
+    i++;
+
+    while (i != arms.end() && idx < i->idx) {
+      i++;
+    }
+    
+    arms.splice(i, arms, arms.begin());
+    arms.begin()->pull(bp.choose(arms.begin()->i));
   }
   return bp.get_regret();
 }
+
 
 /*************************************************************
 GITTINS APPROXIMATION
@@ -217,11 +244,16 @@ double alg_gaussian_ts(BanditProblem &bp, uint64_t n, default_random_engine &gen
   }
 
   for (;t != n;++t) {
-    for (auto &a : arms) {
-      a.idx = a.mean() + dist(gen) / sqrt(1 + a.T);
+    int max_index = -1;
+    double m = -numeric_limits<double>::max();
+    for (int i = 0;i != K;++i) {
+      double idx = arms[i].mean() + dist(gen) / sqrt(arms[i].T);
+      if (idx > m) {
+        m = idx;
+        max_index = i;
+      }
     }
-    auto best = max_element(arms.begin(), arms.end());
-    best->pull(bp.choose(best->i));
+    arms[max_index].pull(bp.choose(arms[max_index].i));
   }
   return bp.get_regret();
 }
