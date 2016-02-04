@@ -258,15 +258,44 @@ double alg_gaussian_ts(BanditProblem &bp, uint64_t n, default_random_engine &gen
   return bp.get_regret();
 }
 
-
+/*************************************************************
+BUDGETFIRST UCB
+*************************************************************/
+double alg_budget_first(BanditProblem &bp, uint64_t n, double alpha, double delta) {
+  bp.reset();
+  uint64_t K = bp.K;
+  double mu0 = bp.mean(0);
+  double x = log(K / delta); 
+  double y = log(max(3.0, log(K / delta))) + log(2.0 * M_E * M_E * K / delta);
+  double max_regret = sqrt(2.0 *n*(K-1) * (x*(1.0 + log(x)) / ((x - 1.0) * log(x)) * log(log(n+1)) + y));
+  double t0 = min((double)n, max_regret / (alpha * mu0));
+  vector<Arm> arms;
+  for (int i = 0;i != K;++i) {
+    arms.push_back(Arm(i, numeric_limits<double>::max())); 
+  }
+  uint64_t t = 0;
+  for (;t < t0 && t < n;++t) {
+    bp.choose(0);  
+  }
+  for (;t<n;++t) {
+    auto J = max_element(arms.begin(), arms.end());
+    J->pull(bp.choose(J->i));
+    double psi = x*(1.0 + log(x)) / ((x - 1.0) * log(x)) * log(log(J->T+1)) + y;
+    J->idx = J->mean() + sqrt(2.0 / J->T * psi);
+  }
+  return bp.get_regret();
+}
 
 
 /*************************************************************
 CONSERVATIVE UCB
 *************************************************************/
-double alg_conservative_ucb(BanditProblem &bp, uint64_t n, double alpha, double delta) {
+double alg_conservative_ucb(BanditProblem &bp, uint64_t n, double alpha, double delta, bool mu_known) {
   bp.reset();
-  double mu0 = bp.mean(0);
+  double mu0 = 0.0;
+  if (mu_known) {
+    mu0 = bp.mean(0);
+  }
   uint64_t K = bp.K;
   vector<Arm> arms;
 
@@ -282,7 +311,7 @@ double alg_conservative_ucb(BanditProblem &bp, uint64_t n, double alpha, double 
   for (uint64_t t = 0;t != n;++t) {
     double Z = 0.0;
     for (int i = 0;i != K;++i) { 
-      if (i == 0) {
+      if (i == 0 && mu_known) {
         arms[i].idx = mu0;
         lambda[i] = mu0;
       }else {
@@ -295,11 +324,19 @@ double alg_conservative_ucb(BanditProblem &bp, uint64_t n, double alpha, double 
           lambda[i] = max(0.0, arms[i].mean() - sqrt(2.0 / arms[i].T * psi));
         }
       }
-      Z+=lambda[i] * arms[i].T;
+      if (i != 0) {
+        Z+=lambda[i] * arms[i].T;
+      }
     }
     auto J = max_element(arms.begin(), arms.end());
+
     Z += lambda[J->i];
-    Z -= (1.0 - alpha) * mu0 * (t+1);
+
+    if (mu_known) {
+      Z += arms[0].T * mu0 - (1.0 - alpha) * mu0 * (t+1);
+    }else {
+      Z += arms[0].T * arms[0].idx - (1.0 - alpha) * arms[0].idx * (t+1);
+    }
     
     if (Z >= 0) {
       J->pull(bp.choose(J->i));

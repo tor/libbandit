@@ -30,6 +30,7 @@ double alg_gaussian_ts(BanditProblem &bp, uint64_t n, std::default_random_engine
 double alg_gaussian_gittins(BanditProblem &bp, uint64_t n, GittinsTable &table);
 double alg_gaussian_gittins_approx(BanditProblem &bp, uint64_t n); 
 double alg_gaussian_bayes(BanditProblem &bp, uint64_t n, BayesTable &table);
-double alg_conservative_ucb(BanditProblem &bp, uint64_t n, double alpha, double delta);
+double alg_conservative_ucb(BanditProblem &bp, uint64_t n, double alpha, double delta, bool mu_known = true);
+double alg_budget_first(BanditProblem &bp, uint64_t n, double alpha, double delta);
 double alg_unbalanced_moss(BanditProblem &bp, uint64_t n, std::vector<double> B);
 
