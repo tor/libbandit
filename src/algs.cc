@@ -268,8 +268,16 @@ double alg_budget_first(BanditProblem &bp, uint64_t n, double alpha, double delt
   double x = log(K / delta); 
   double y = log(max(3.0, log(K / delta))) + log(2.0 * M_E * M_E * K / delta);
   double max_regret = sqrt(2.0 *n*(K-1) * (x*(1.0 + log(x)) / ((x - 1.0) * log(x)) * log(log(n+1)) + y));
-  double t0 = min((double)n, max_regret / (alpha * mu0));
   vector<Arm> arms;
+
+ 
+
+  uint64_t t0;
+  for (t0 = 1;t0 != n;++t0) {
+    if (max(0.0, mu0 * t0 - max_regret) >= (1.0 - alpha) * mu0 * t0) {
+      break;
+    }
+  }
   for (int i = 0;i != K;++i) {
     arms.push_back(Arm(i, numeric_limits<double>::max())); 
   }
@@ -277,11 +285,15 @@ double alg_budget_first(BanditProblem &bp, uint64_t n, double alpha, double delt
   for (;t < t0 && t < n;++t) {
     bp.choose(0);  
   }
+  arms[0].idx = mu0;
+
   for (;t<n;++t) {
     auto J = max_element(arms.begin(), arms.end());
     J->pull(bp.choose(J->i));
-    double psi = x*(1.0 + log(x)) / ((x - 1.0) * log(x)) * log(log(J->T+1)) + y;
-    J->idx = J->mean() + sqrt(2.0 / J->T * psi);
+    if (J->i != 0) {
+      double psi = x*(1.0 + log(x)) / ((x - 1.0) * log(x)) * log(log(J->T+1)) + y;
+      J->idx = J->mean() + sqrt(2.0 / J->T * psi);
+    }
   }
   return bp.get_regret();
 }
