@@ -55,12 +55,19 @@ void do_experiment1(default_random_engine gen) {
   for (int t = 0;t!=20000 && !done();++t) {
     cout << "running trial: " << t << "\n";
     for (int n = 2000; n!= 100000;n+=2000) {
-      vector<double> mus = {0.5, 0.6, 0.4, 0.4, 0.4};
+      int K = 5;
+      double alpha = 0.1;
+      double mu0 = 0.5;
+      double B1 = sqrt(K * n) + K / (mu0 * alpha);
+      double B0 = n*(K-1) / B1;
+      vector<double> B = {B0, B1, B1, B1, B1}; 
+      vector<double> mus = {mu0, 0.6, 0.4, 0.4, 0.4};
       GaussianBandit bandit(mus, gen);
-      log.log(LogEntry(0, n, alg_ucb(bandit, n, 2.0)));
-      log.log(LogEntry(1, n, alg_conservative_ucb(bandit, n, 0.1, 1.0 / n, true))); 
-      log.log(LogEntry(2, n, alg_conservative_ucb(bandit, n, 0.1, 1.0 / n, false))); 
-      log.log(LogEntry(3, n, alg_budget_first(bandit, n, 0.1, 1.0 / n)));
+/*      log.log(LogEntry(0, n, alg_ucb(bandit, n, 2.0)));
+      log.log(LogEntry(1, n, alg_conservative_ucb(bandit, n, alpha, 1.0 / n, true))); 
+      log.log(LogEntry(2, n, alg_conservative_ucb(bandit, n, alpha, 1.0 / n, false))); 
+      log.log(LogEntry(3, n, alg_budget_first(bandit, n, alpha, 1.0 / n)));*/
+      log.log(LogEntry(4, n, alg_unbalanced_moss(bandit, n, B)));
     }
 
     if (t % 20 == 0) {
@@ -79,15 +86,22 @@ void do_experiment1(default_random_engine gen) {
 void do_experiment2(default_random_engine gen) {
   Logger<LogEntry> log("data/experiment2.log");
   int n = 10000;
-  vector<double> mus = {0.5, 0.6, 0.4, 0.4, 0.4};
+  double mu0 = 0.5;
+  int K = 5;
+  vector<double> mus = {mu0, 0.6, 0.4, 0.4, 0.4};
   for (int t = 0;t!=20000 && !done();++t) {
     cout << "running trial: " << t << "\n";
     for (double alpha = 0.0;alpha <= 1.001;alpha+=0.01) {
+      double B1 = sqrt(K * n) + K / (mu0 * alpha);
+      double B0 = n*(K-1) / B1;
+      vector<double> B = {B0, B1, B1, B1, B1}; 
+
       GaussianBandit bandit(mus, gen);
-      log.log(LogEntry(0, alpha, alg_ucb(bandit, n, 2.0)));
+      /*log.log(LogEntry(0, alpha, alg_ucb(bandit, n, 2.0)));
       log.log(LogEntry(1, alpha, alg_conservative_ucb(bandit, n, alpha, 1.0 / n, true))); 
       log.log(LogEntry(2, alpha, alg_conservative_ucb(bandit, n, alpha, 1.0 / n, false))); 
-      log.log(LogEntry(3, alpha, alg_budget_first(bandit, n, alpha, 1.0 / n)));
+      log.log(LogEntry(3, alpha, alg_budget_first(bandit, n, alpha, 1.0 / n)));*/
+      log.log(LogEntry(4, alpha, alg_unbalanced_moss(bandit, n, B)));
     }
 
     if (t % 4 == 0) {
