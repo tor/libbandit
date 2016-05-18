@@ -50,13 +50,10 @@ void do_experiment1(default_random_engine gen, int n, int K, double m, string fn
   int xn = 100;
   double step = m/xn;
 
-  AnytimeOCUCB anytime_ocucb1(0.5, 0.0);
-  AnytimeOCUCB anytime_ocucb2(1.0, 0.0);
-  AnytimeOCUCB anytime_ocucb3(0.5, 1.0);
-  AnytimeOCUCB anytime_ocucb4(1.0, 1.0);
-  UCB ucb;
-  OCUCB ocucb;
-  AOCUCB aocucb;
+  AnytimeOCUCB anytime_ocucb(2.0, 0.5);
+  OptAnytimeOCUCB opt_anytime_ocucb(2.0, 0.5); 
+  UCB ucb(2.0);
+  OCUCB ocucb(3.0, 2.0);
   GaussianGittins gittins("gittins/10000.bin");
   GaussianTS ts(gen);
   
@@ -68,20 +65,48 @@ void do_experiment1(default_random_engine gen, int n, int K, double m, string fn
       }
       shuffle(mus.begin(),mus.end(), gen);
       GaussianBandit bandit(mus, gen);
-      log.log(LogEntry(0, delta, anytime_ocucb1.sim(bandit, n)));
-      log.log(LogEntry(1, delta, anytime_ocucb2.sim(bandit, n)));
-      log.log(LogEntry(2, delta, anytime_ocucb3.sim(bandit, n)));
-      log.log(LogEntry(3, delta, anytime_ocucb4.sim(bandit, n)));
-      log.log(LogEntry(4, delta, ucb.sim(bandit, n)));
-      log.log(LogEntry(5, delta, ocucb.sim(bandit, n)));
-      log.log(LogEntry(6, delta, aocucb.sim(bandit, n)));
-      log.log(LogEntry(7, delta, gittins.sim(bandit, n)));
-      log.log(LogEntry(8, delta, ts.sim(bandit, n)));
+      log.log(LogEntry(0, delta, anytime_ocucb.sim(bandit, n)));
+      log.log(LogEntry(1, delta, opt_anytime_ocucb.sim(bandit, n)));
+      log.log(LogEntry(2, delta, ucb.sim(bandit, n)));
+      log.log(LogEntry(3, delta, ocucb.sim(bandit, n)));
+      log.log(LogEntry(4, delta, ts.sim(bandit, n)));
+      log.log(LogEntry(5, delta, gittins.sim(bandit, n)));
     }
     log.save(false);
   }
   log.save();
 }
+
+
+/********************************************************
+ASYMPTOTIC
+********************************************************/
+void do_experiment2(default_random_engine gen, string fn) {
+  Logger<LogEntry> log(fn);
+
+  AnytimeOCUCB anytime_ocucb(2.0, 0.5);
+  OptAnytimeOCUCB opt_anytime_ocucb(2.0, 0.5);
+  UCB ucb(2.0);
+  OCUCB ocucb(3.0, 2.0);
+  GaussianTS ts(gen);
+
+  vector<double> mus = {0,-0.1,-0.1,-0.1,-0.5,-0.5,-0.5,-1.0,-1.0,-1.0};
+  
+  for (int t = 0;t!=200000 && !done();++t) {
+    for (uint64_t n : {1000, 5000, 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000}) {
+      shuffle(mus.begin(),mus.end(), gen);
+      GaussianBandit bandit(mus, gen);
+      log.log(LogEntry(0, n, anytime_ocucb.sim(bandit, n)));
+      log.log(LogEntry(1, n, opt_anytime_ocucb.sim(bandit, n)));
+      log.log(LogEntry(2, n, ucb.sim(bandit, n)));
+      log.log(LogEntry(3, n, ocucb.sim(bandit, n)));
+      log.log(LogEntry(4, n, ts.sim(bandit, n)));
+    }
+    log.save(false);
+  }
+  log.save();
+}
+
 
 
 
@@ -104,9 +129,10 @@ int main(int argc, char *argv[]) {
   run_time = atoi(argv[2]);
 
   switch (exp_id) {
-    case 1: do_experiment1(gen, 1000, 2, 0.5, "data/exp1.log"); break;
-    case 2: do_experiment1(gen, 1000, 10, 0.75, "data/exp2.log"); break;
-    case 3: do_experiment1(gen, 1000, 100, 1.0, "data/exp3.log"); break;
+    case 1: do_experiment1(gen, 5000, 2, 0.5, "data/exp1.log"); break;
+    case 2: do_experiment1(gen, 5000, 10, 0.75, "data/exp2.log"); break;
+    case 3: do_experiment1(gen, 5000, 100, 1.0, "data/exp3.log"); break;
+    case 4: do_experiment2(gen, "data/exp4.log"); break;
   }
 }
 

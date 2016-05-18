@@ -34,16 +34,16 @@ int main() {
   uint64_t K = 2;
   uint64_t n = 10000;
   vector<double> mus = {0};
-  for (int i = 1;i != K;++i) {
+  for (uint64_t i = 1;i != K;++i) {
     mus.push_back(-0.3);
   }
   
 
   GaussianBandit bandit(mus, gen); 
   vector<double> r(5, 0.0);
-  UCB ucb;
-  OCUCB ocucb;
-  AnytimeOCUCB aocucb(0.5, 0.0);
+  UCB ucb(2.0);
+  OCUCB ocucb(3.0, 2.0);
+  AnytimeOCUCB aocucb(2.0, 0.5);
   GaussianTS ts(gen);
   GaussianGittins git("gittins/10000.bin");
   for (int samples = 1;samples <= 1000;++samples) {

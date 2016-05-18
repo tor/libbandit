@@ -69,18 +69,16 @@ double IndexAlgorithm::sim(BanditProblem &bp, uint64_t horizon) {
 
     update(best);
 
-    if (best != arms.begin()) {
-      sort(arms.begin(), last+1, [](const Arm &a1, const Arm &a2) {return a1.max_idx > a2.max_idx;});
-      inplace_merge(arms.begin(), last+1, arms.end(), [](const Arm &a1, const Arm &a2) {return a1.max_idx > a2.max_idx;});
-    }
+    sort(arms.begin(), last+1, [](const Arm &a1, const Arm &a2) {return a1.max_idx > a2.max_idx;});
+    inplace_merge(arms.begin(), last+1, arms.end(), [](const Arm &a1, const Arm &a2) {return a1.max_idx > a2.max_idx;});
   }
   return bp.get_regret();
 }
 
 
 void UCB::set_index(vector<Arm>::iterator a, uint64_t t) {
-  a->idx = a->mean() + sqrt(2.0 / a->T * log(t));
-  a->max_idx = a->mean() + sqrt(2.0 / a->T * log(n));
+  a->idx = a->mean() + sqrt(alpha / a->T * log(t));
+  a->max_idx = a->mean() + sqrt(alpha / a->T * log(n));
 }
 
 void MOSS::set_index(vector<Arm>::iterator a, uint64_t t) {
@@ -89,23 +87,34 @@ void MOSS::set_index(vector<Arm>::iterator a, uint64_t t) {
 }
 
 void OCUCB::set_index(vector<Arm>::iterator a, uint64_t t) {
-  a->idx = a->mean() + sqrt(3.0 / a->T * log(2.0 * (double)n / t));
+  a->idx = a->mean() + sqrt(alpha / a->T * log(psi * (double)n / t));
+//  a->max_idx = std::numeric_limits<double>::max();
   a->max_idx = a->idx;
 }
 
 void AnytimeOCUCB::set_index(vector<Arm>::iterator a, uint64_t t) {
   const double EULER = exp(1.0);
-  a->idx =     a->mean() + sqrt(2.0 / a->T * log(max(max(EULER, log(t+1.0)), pow(log(t+1.0), logpower)  * (t+1.0) / lookup.lookup(a->i)))); 
-  a->max_idx = a->mean() + sqrt(2.0 / a->T * log(max(max(EULER, log(n+1.0)), pow(log(n+1.0), logpower)  * (n+1.0) / lookup.lookup(a->i)))); 
+  a->idx =     a->mean() + sqrt(alpha / a->T * log(max(max(EULER, log(t+1.0)), log(t+1.0)  * (t+1.0) / lookup.lookup(a->i)))); 
+  a->max_idx = a->mean() + sqrt(alpha / a->T * log(max(max(EULER, log(n+1.0)), log(n+1.0)  * (n+1.0) / lookup.lookup(a->i)))); 
 }
 
 void AnytimeOCUCB::update(vector<Arm>::iterator a) {
   lookup.update(a->i);
 }
 
+void OptAnytimeOCUCB::set_index(vector<Arm>::iterator a, uint64_t t) {
+  a->idx =     a->mean() + sqrt(alpha / a->T * log(max(1.0, (t+1.0) / lookup.lookup(a->i)))); 
+  a->max_idx =     a->mean() + sqrt(alpha / a->T * log(max(1.0, (n+1.0) / lookup.lookup(a->i)))); 
+}
+
+void OptAnytimeOCUCB::update(vector<Arm>::iterator a) {
+  lookup.update(a->i);
+}
+
+
 void AOCUCB::set_index(vector<Arm>::iterator a, uint64_t t) {
-  a->idx = a->mean() + sqrt(2.0 / a->T * log((double)t / a->T));
-  a->max_idx = a->mean() + sqrt(2.0 / a->T * log((double)n / a->T));
+  a->idx = a->mean() + sqrt(alpha / a->T * log((double)t / a->T));
+  a->max_idx = a->mean() + sqrt(alpha / a->T * log((double)n / a->T));
 }
 
 void GaussianTS::set_index(vector<Arm>::iterator a, uint64_t t) {

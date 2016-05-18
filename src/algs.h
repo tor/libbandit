@@ -103,6 +103,11 @@ class IndexAlgorithm {
 
 
 class UCB : public IndexAlgorithm {
+  public:
+  UCB(double alpha) : alpha(alpha) {}
+
+  private:
+  double alpha;
   void set_index(std::vector<Arm>::iterator, uint64_t t);
 };
 
@@ -111,16 +116,26 @@ class MOSS : public IndexAlgorithm {
 };
 
 class OCUCB : public IndexAlgorithm {
+  public:
+  OCUCB(double alpha, double psi) : alpha(alpha), psi(psi) {}
+  private:
+  double alpha;
+  double psi;
   void set_index(std::vector<Arm>::iterator, uint64_t t);
 };
 
 class AOCUCB : public IndexAlgorithm {
+  public:
+  AOCUCB(double alpha) : alpha(alpha) {}
+  private:
+
+  double alpha;
   void set_index(std::vector<Arm>::iterator, uint64_t t);
 };
 
 class AnytimeOCUCB : public IndexAlgorithm {
   public:
-  AnytimeOCUCB(double rho, double logpower) : rho(rho), logpower(logpower) {
+  AnytimeOCUCB(double alpha, double rho) : alpha(alpha), rho(rho) {
   }
 
   double sim(BanditProblem &bp, uint64_t horizon) {
@@ -131,8 +146,26 @@ class AnytimeOCUCB : public IndexAlgorithm {
   void update(std::vector<Arm>::iterator); 
   void set_index(std::vector<Arm>::iterator, uint64_t t);
 
+  double alpha;
   double rho;
-  double logpower;
+
+  SortedLookup lookup; 
+};
+
+class OptAnytimeOCUCB : public IndexAlgorithm {
+  public:
+  OptAnytimeOCUCB(double alpha, double rho) : alpha(alpha), rho(rho) {
+  }
+  double sim(BanditProblem &bp, uint64_t horizon) {
+    lookup = SortedLookup(bp.K, rho);
+    return IndexAlgorithm::sim(bp, horizon);
+  }
+  protected:
+  void update(std::vector<Arm>::iterator); 
+  void set_index(std::vector<Arm>::iterator, uint64_t t);
+
+  double alpha;
+  double rho;
 
   SortedLookup lookup; 
 };

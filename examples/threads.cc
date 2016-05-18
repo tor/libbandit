@@ -60,7 +60,7 @@ int main() {
 
       /* create a gaussian bandit */
       GaussianBandit bandit(means, gen);
-      UCB ucb;
+      UCB ucb(2.0);
 
       /* create a UCB algorithm with alpha = 2 */
       return ucb.sim(bandit, horizon);

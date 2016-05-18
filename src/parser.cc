@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
     pos+=sizeof(LogEntry) * read_number;
 
 
-    for (int i = 0;i != read_number;++i) {
+    for (uint64_t i = 0;i != read_number;++i) {
       auto iter1 = table.find(data[i].x);
       if (iter1 == table.end()) {
         table[data[i].x] = {{data[i].id, Data(data[i].y)}};
