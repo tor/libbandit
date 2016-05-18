@@ -37,9 +37,6 @@ double BanditProblem::get_regret()const {
   return regret;
 }
 
-void BanditProblem::reset() {
-  regret = 0.0;
-}
 
 
 double BanditProblem::gap(int i)const {

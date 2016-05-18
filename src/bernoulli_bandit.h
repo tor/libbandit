@@ -18,14 +18,13 @@ see http://creativecommons.org/publicdomain/zero/1.0/
 #include <vector>
 #include <random>
 
-#include "bandit_alg.h"
 
 
 class BernoulliBandit : public BanditProblem {
   public:
   
-  BernoulliBandit(int K, std::vector<double> means, std::default_random_engine &g) : gen(g) {
-    this->K = K;
+  BernoulliBandit(std::vector<double> means, std::default_random_engine &g) : gen(g) {
+    this->K = means.size();
     this->means = means;
     setup();
   }
@@ -37,6 +36,10 @@ class BernoulliBandit : public BanditProblem {
 
   double mean(int i)const {
     return means[i];
+  }
+
+  void reset() {
+    set_regret(0);
   }
 
   private:

@@ -28,6 +28,8 @@ class BanditProblem {
   virtual double        sample(int i) = 0;         
   /* returns the mean of the ith arm */
   virtual double        mean(int i)const = 0;           
+  /* resets */
+  virtual void reset() = 0;
 
   /* returns the gap for the ith arm */
   double gap(int i)const;                        
@@ -37,7 +39,10 @@ class BanditProblem {
 
   /* initialises the gaps */
   void setup();                              
-  void reset();
+
+  void set_regret(double r) {
+    regret = r;
+  }
 
   /* choose arm */
   double choose(int i) {

@@ -27,8 +27,10 @@ class Arm {
 
   int i;
   double idx;
+  double max_idx;
   double reward;
   uint64_t T;
+  uint64_t last_played;
   
   void pull(double r) {
     ++T;

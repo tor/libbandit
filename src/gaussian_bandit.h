@@ -26,6 +26,7 @@ Rewards are Gaussian with given means and unit variance.
 #include <random>
 #include <functional>
 #include <string>
+#include <iostream>
 
 #include "bandit.h"
 
@@ -48,10 +49,49 @@ class GaussianBandit : public BanditProblem {
     return means[i];
   }
 
+  void reset() {
+    set_regret(0);
+  }
 
   private:
   std::default_random_engine &gen;
   std::vector<double> means;
 };
+
+class GaussianBanditWithLogging : public BanditProblem {
+  public:
+  GaussianBanditWithLogging(std::vector<double> means, std::default_random_engine &g) : gen(g) {
+    this->K = means.size();
+    this->means = means;
+    setup();
+  }
+
+  double sample(int i) {
+    actions.push_back(i);
+    std::normal_distribution<double> dist(means[i], 1.0);
+    double reward = dist(gen);
+    rewards.push_back(mean(i));
+    return reward;
+  }
+
+  double mean(int i)const {
+    return means[i];
+  }
+
+  void reset() {
+    actions.clear();
+    rewards.clear();
+    set_regret(0.0);
+  }
+
+  std::vector<int> actions;
+  std::vector<double> rewards;
+
+  private:
+  std::default_random_engine &gen;
+  std::vector<double> means;
+};
+
+
 
 
